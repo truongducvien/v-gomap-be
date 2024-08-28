@@ -3,11 +3,12 @@ import { UsersController } from './users.controller';
 import { UsersService } from './users.service';
 // import { TestMiddleWare } from 'src/middlewares';
 import { USERS_ROUTE } from './route';
+import { PrismaService } from 'src/prisma.service';
 
 @Module({
   imports: [],
   controllers: [UsersController],
-  providers: [UsersService],
+  providers: [UsersService, PrismaService],
 })
 export class UsersModule implements NestModule {
   configure(consumer: MiddlewareConsumer) {

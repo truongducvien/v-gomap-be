@@ -1,8 +1,11 @@
-import { MiddlewareConsumer, Module, NestModule } from '@nestjs/common';
+import {
+  MiddlewareConsumer,
+  Module,
+  NestModule,
+  RequestMethod,
+} from '@nestjs/common';
 import { UsersController } from './users.controller';
 import { UsersService } from './users.service';
-// import { TestMiddleWare } from 'src/middlewares';
-import { USERS_ROUTE } from './route';
 import { PrismaService } from 'src/prisma.service';
 
 @Module({
@@ -11,7 +14,5 @@ import { PrismaService } from 'src/prisma.service';
   providers: [UsersService, PrismaService],
 })
 export class UsersModule implements NestModule {
-  configure(consumer: MiddlewareConsumer) {
-    // consumer.apply(TestMiddleWare).forRoutes(USERS_ROUTE.userDetail);
-  }
+  configure(consumer: MiddlewareConsumer) {}
 }

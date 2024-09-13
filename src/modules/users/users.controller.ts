@@ -7,15 +7,18 @@ import {
   HttpStatus,
   Param,
   Post,
+  UseInterceptors,
   ValidationPipe,
 } from '@nestjs/common';
 import { UsersService } from './users.service';
-import { CreateUserDto } from 'src/users/dto';
 import { ApiCreatedResponse, ApiParam, ApiTags } from '@nestjs/swagger';
 import { User } from '@prisma/client';
+import { ResponseInterceptor } from 'src/interceptors';
+import { CreateUserDto } from './dto';
 
 @ApiTags('Users')
 @Controller('users')
+@UseInterceptors(ResponseInterceptor)
 export class UsersController {
   constructor(private usersService: UsersService) {}
 
@@ -25,9 +28,14 @@ export class UsersController {
   }
 
   @Get(':id')
-  getById(@Param('id') id: string): string {
-    if (id === '1') throw new Error('abc error');
-    return 'vien, id: ' + id;
+  getById(@Param('id') id: string): Promise<User> {
+    const userId = Number(id);
+
+    if (isNaN(userId))
+      throw new HttpException('Invalid user id', HttpStatus.BAD_REQUEST);
+
+    const result = this.usersService.getUserById(Number(id));
+    return result;
   }
 
   @Post()
@@ -46,7 +54,6 @@ export class UsersController {
     try {
       await this.usersService.deleteUser(id);
     } catch (error) {
-      console.log('error:::: ', error);
       throw new HttpException('Delete failed!', HttpStatus.BAD_REQUEST);
     }
   }

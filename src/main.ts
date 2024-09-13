@@ -1,7 +1,6 @@
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
-import { testMiddleWare } from './middlewares';
 import { API_PREFIX } from './constants';
 
 async function bootstrap() {

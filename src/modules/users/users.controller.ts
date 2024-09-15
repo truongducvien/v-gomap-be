@@ -6,6 +6,7 @@ import {
   HttpException,
   HttpStatus,
   Param,
+  ParseIntPipe,
   Post,
   UseInterceptors,
   ValidationPipe,
@@ -28,12 +29,7 @@ export class UsersController {
   }
 
   @Get(':id')
-  getById(@Param('id') id: string): Promise<User> {
-    const userId = Number(id);
-
-    if (isNaN(userId))
-      throw new HttpException('Invalid user id', HttpStatus.BAD_REQUEST);
-
+  getById(@Param('id', ParseIntPipe) id: string): Promise<User> {
     const result = this.usersService.getUserById(Number(id));
     return result;
   }

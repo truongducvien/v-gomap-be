@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { User } from '@prisma/client';
-import { CreateUserDto } from './dto';
 import { PrismaService } from 'src/prisma.service';
+import { CreateUserDto } from './users.dto';
 
 @Injectable()
 export class UsersService {
@@ -11,15 +11,19 @@ export class UsersService {
     return this.prisma.user.findMany();
   }
 
-  async getUserById(id: User['id']): Promise<User> {
+  async findById(id: User['id']): Promise<User> {
     return this.prisma.user.findUnique({
-      where: {
-        id,
-      },
+      where: { id },
     });
   }
 
-  async createUser(payload: CreateUserDto): Promise<User> {
+  async findByEmail(email: User['email']): Promise<User> {
+    return this.prisma.user.findUnique({
+      where: { email },
+    });
+  }
+
+  async create(payload: CreateUserDto): Promise<User> {
     return this.prisma.user.create({ data: payload });
   }
 

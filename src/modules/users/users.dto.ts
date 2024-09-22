@@ -6,4 +6,20 @@ export class CreateUserDto {
   @IsNotEmpty()
   @IsEmail({}, { message: 'Email is invalid' })
   email: string;
+
+  @ApiProperty()
+  @IsNotEmpty()
+  firstName: string;
+
+  @ApiProperty()
+  @IsNotEmpty()
+  lastName: string;
+
+  @ApiProperty()
+  profileUrl?: string;
+}
+
+export class GetUserDto extends CreateUserDto {
+  @ApiProperty()
+  id: string;
 }

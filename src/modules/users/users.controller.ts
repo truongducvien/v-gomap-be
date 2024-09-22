@@ -5,32 +5,54 @@ import {
   Get,
   HttpException,
   HttpStatus,
+  NotFoundException,
   Param,
   ParseIntPipe,
   Post,
+  Req,
+  UseGuards,
   UseInterceptors,
   ValidationPipe,
 } from '@nestjs/common';
 import { UsersService } from './users.service';
-import { ApiCreatedResponse, ApiParam, ApiTags } from '@nestjs/swagger';
+import {
+  ApiBearerAuth,
+  ApiCreatedResponse,
+  ApiParam,
+  ApiResponse,
+  ApiTags,
+} from '@nestjs/swagger';
 import { User } from '@prisma/client';
+import { CreateUserDto, GetUserDto } from './users.dto';
 import { ResponseInterceptor } from 'src/interceptors';
-import { CreateUserDto } from './dto';
+import { AppAuthGuard } from '../auth/auth.guard';
 
-@ApiTags('Users')
 @Controller('users')
+@ApiTags('Users')
+@UseGuards(AppAuthGuard)
+@ApiBearerAuth()
 @UseInterceptors(ResponseInterceptor)
 export class UsersController {
   constructor(private usersService: UsersService) {}
 
+  @ApiResponse({
+    type: [GetUserDto],
+  })
   @Get()
   async getUsers(): Promise<User[]> {
     return this.usersService.getUsers();
   }
 
+  @Get('current-user')
+  getCurrentUser(@Req() req: any): any {
+    const user = req['user'];
+    if (!user) throw new NotFoundException('Can not find current user.');
+    return user;
+  }
+
   @Get(':id')
-  getById(@Param('id', ParseIntPipe) id: string): Promise<User> {
-    const result = this.usersService.getUserById(Number(id));
+  getById(@Param('id', ParseIntPipe) id: number): Promise<User> {
+    const result = this.usersService.findById(id);
     return result;
   }
 
@@ -38,7 +60,7 @@ export class UsersController {
   @ApiCreatedResponse({ description: 'User created' })
   async createUser(@Body(ValidationPipe) payload: CreateUserDto) {
     try {
-      this.usersService.createUser(payload);
+      this.usersService.create(payload);
     } catch (error) {
       console.log(error);
     }

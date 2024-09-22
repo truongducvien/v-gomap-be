@@ -1,0 +1,109 @@
+import {
+  BadRequestException,
+  Controller,
+  Get,
+  NotFoundException,
+  Query,
+  Redirect,
+  Request,
+  UseGuards,
+} from '@nestjs/common';
+import { ApiResponse, ApiTags } from '@nestjs/swagger';
+import { UsersService } from '../users/users.service';
+import { JwtPayload, AuthServiceUser } from './auth.interface';
+import { LogInResponseDto } from './auth.dto';
+import { JwtService } from '@nestjs/jwt';
+import { FacebookAuthGuard, GoogleAuthGuard } from './auth.guard';
+
+@ApiTags('Auth')
+@Controller('auth')
+export class AuthController {
+  constructor(
+    private userService: UsersService,
+    private jwtService: JwtService
+  ) {}
+
+  @Get('google')
+  @UseGuards(GoogleAuthGuard)
+  async googleAuth() {}
+
+  @Get('google-redirect')
+  @UseGuards(GoogleAuthGuard)
+  @Redirect()
+  async googleRedirect(@Request() req) {
+    const googleUserRes = req.user as AuthServiceUser; // Google strategy returned the value and assigned user value to the request
+    const { email, firstName, lastName, picture } = googleUserRes;
+
+    const existedUser = await this.userService.findByEmail(googleUserRes.email);
+    let payload: JwtPayload;
+
+    if (!existedUser) {
+      const newUser = await this.userService.create({
+        email,
+        firstName,
+        lastName,
+        profileUrl: picture,
+      });
+      payload = { email: newUser.email };
+    } else {
+      payload = { email: existedUser.email };
+    }
+
+    const authToken = this.jwtService.sign(payload as JwtPayload);
+
+    return { url: `${process.env.PUBLIC_FE_URL}?token=${authToken}` };
+  }
+
+  @Get('facebook')
+  @UseGuards(FacebookAuthGuard)
+  async facebookAuth() {}
+
+  @Get('facebook-redirect')
+  @UseGuards(FacebookAuthGuard)
+  @Redirect()
+  async facebookRedirect(@Request() req) {
+    const fbUserRes = req.user as AuthServiceUser; // Facebook strategy returned the value and assigned user value to the request
+    const { email, firstName, lastName, picture } = fbUserRes;
+
+    const existedUser = await this.userService.findByEmail(fbUserRes.email);
+    let payload: JwtPayload;
+
+    if (!existedUser) {
+      const newUser = await this.userService.create({
+        email,
+        firstName,
+        lastName,
+        profileUrl: picture,
+      });
+      payload = { email: newUser.email };
+    } else {
+      payload = { email: existedUser.email };
+    }
+
+    const authToken = this.jwtService.sign(payload as JwtPayload);
+
+    return { url: `${process.env.PUBLIC_FE_URL}?token=${authToken}` };
+  }
+
+  @Get('log-in')
+  @ApiResponse({
+    type: LogInResponseDto,
+  })
+  async logIn(@Query('token') token: string): Promise<LogInResponseDto> {
+    try {
+      const decoded = this.jwtService.verify<JwtPayload>(token);
+      if (!decoded) throw new BadRequestException('Invalid token');
+
+      const user = await this.userService.findByEmail(decoded.email);
+
+      if (!user) throw new NotFoundException('User does not exist');
+      const payload: JwtPayload = { email: user.email };
+      const accessToken = this.jwtService.sign(payload, {
+        expiresIn: 24 * 60 * 60,
+      });
+      return { accessToken };
+    } catch (error) {
+      throw new BadRequestException(error?.message?.error || 'Invalid token');
+    }
+  }
+}

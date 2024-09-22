@@ -10,13 +10,14 @@ async function bootstrap() {
 
   // CORS
   app.enableCors();
-
+  // Endpoint prefix
   app.setGlobalPrefix(API_PREFIX);
 
   const config = new DocumentBuilder()
     .setTitle('V-Gomap')
     .setDescription('API for V-Gomap')
     .setVersion('1.0')
+    .addBearerAuth()
     .build();
   const document = SwaggerModule.createDocument(app, config);
   SwaggerModule.setup('api', app, document);

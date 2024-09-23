@@ -2,10 +2,12 @@ import {
   BadRequestException,
   Controller,
   Get,
+  InternalServerErrorException,
   NotFoundException,
   Query,
   Redirect,
   Request,
+  UnauthorizedException,
   UseGuards,
 } from '@nestjs/common';
 import { ApiResponse, ApiTags } from '@nestjs/swagger';
@@ -90,20 +92,25 @@ export class AuthController {
     type: LogInResponseDto,
   })
   async logIn(@Query('token') token: string): Promise<LogInResponseDto> {
+    let decoded: JwtPayload;
     try {
-      const decoded = this.jwtService.verify<JwtPayload>(token);
-      if (!decoded) throw new BadRequestException('Invalid token');
+      decoded = this.jwtService.verify<JwtPayload>(token);
+    } catch {
+      throw new UnauthorizedException('Invalid token');
+    }
 
-      const user = await this.userService.findByEmail(decoded.email);
+    const user = await this.userService.findByEmail(decoded.email);
+    if (!user) throw new NotFoundException('User does not exist');
+    const payload: JwtPayload = { email: user.email };
 
-      if (!user) throw new NotFoundException('User does not exist');
-      const payload: JwtPayload = { email: user.email };
-      const accessToken = this.jwtService.sign(payload, {
+    let accessToken: string;
+    try {
+      accessToken = this.jwtService.sign(payload, {
         expiresIn: 24 * 60 * 60,
       });
-      return { accessToken };
-    } catch (error) {
-      throw new BadRequestException(error?.message?.error || 'Invalid token');
+      return new LogInResponseDto(accessToken);
+    } catch {
+      throw new InternalServerErrorException('Create token failed.');
     }
   }
 }

@@ -36,19 +36,21 @@ export class AppAuthGuard implements CanActivate {
   ) {}
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
+    const req: Request = context.switchToHttp().getRequest();
+    const token = getTokenFromRequestHeader(req);
+    if (!token) throw new UnauthorizedException('Invalid token');
+
+    let decoded: JwtPayload;
     try {
-      const req: Request = context.switchToHttp().getRequest();
-      const token = getTokenFromRequestHeader(req);
-      if (!token) throw new UnauthorizedException('Invalid token');
-
-      const decoded: JwtPayload = this.jwtService.verify(token);
-      const result = await this.usersService.findByEmail(decoded.email);
-      if (!result) throw new NotFoundException('Email does not exist.');
-
-      req['user'] = result; // Set user info into request if request is authenticated
-      return true;
-    } catch (error) {
-      throw new BadRequestException(error?.message?.error || 'Invalid token');
+      decoded = this.jwtService.verify(token);
+    } catch {
+      throw new UnauthorizedException('Invalid token');
     }
+
+    const result = await this.usersService.findByEmail(decoded.email);
+    if (!result) throw new NotFoundException('Email does not exist.');
+
+    req['user'] = result; // Set user info into request if request is authenticated
+    return true;
   }
 }

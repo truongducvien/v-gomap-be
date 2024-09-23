@@ -1,10 +1,10 @@
 import {
+  BadRequestException,
   Body,
   Controller,
   Delete,
   Get,
-  HttpException,
-  HttpStatus,
+  InternalServerErrorException,
   NotFoundException,
   Param,
   ParseIntPipe,
@@ -35,44 +35,53 @@ import { AppAuthGuard } from '../auth/auth.guard';
 export class UsersController {
   constructor(private usersService: UsersService) {}
 
+  @Get()
   @ApiResponse({
     type: [GetUserDto],
   })
-  @Get()
   async getUsers(): Promise<User[]> {
     return this.usersService.getUsers();
   }
 
   @Get('current-user')
-  getCurrentUser(@Req() req: any): any {
+  @ApiResponse({
+    type: GetUserDto,
+  })
+  getCurrentUser(@Req() req: any): Promise<GetUserDto> {
     const user = req['user'];
     if (!user) throw new NotFoundException('Can not find current user.');
     return user;
   }
 
   @Get(':id')
-  getById(@Param('id', ParseIntPipe) id: number): Promise<User> {
-    const result = this.usersService.findById(id);
-    return result;
+  @ApiResponse({
+    type: GetUserDto,
+  })
+  async getById(@Param('id', ParseIntPipe) id: number): Promise<GetUserDto> {
+    const result = await this.usersService.findById(id);
+
+    if (!result) throw new BadRequestException('User does not exist.');
+    return new GetUserDto(result);
   }
 
   @Post()
-  @ApiCreatedResponse({ description: 'User created' })
+  @ApiCreatedResponse({ description: 'User created', type: CreateUserDto })
   async createUser(@Body(ValidationPipe) payload: CreateUserDto) {
-    try {
-      this.usersService.create(payload);
-    } catch (error) {
-      console.log(error);
-    }
+    const isExisted = await this.usersService.findByEmail(payload.email);
+    if (isExisted) throw new BadRequestException('Email has already existed.');
+
+    const newUser = await this.usersService.create(payload);
+    if (!newUser) throw new InternalServerErrorException('Create failed.');
+    return new GetUserDto(newUser);
   }
 
   @Delete(':id')
   @ApiParam({ name: 'id', type: 'number' })
-  async deleteUser(@Param('id') id: User['id']) {
-    try {
-      await this.usersService.deleteUser(id);
-    } catch (error) {
-      throw new HttpException('Delete failed!', HttpStatus.BAD_REQUEST);
-    }
+  async deleteUser(@Param('id', ParseIntPipe) id: User['id']) {
+    const isExisted = await this.usersService.findById(id);
+    if (!isExisted) throw new BadRequestException('User does not exist.');
+
+    const deleted = await this.usersService.deleteUser(id);
+    if (!deleted) throw new InternalServerErrorException('Delete failed!');
   }
 }

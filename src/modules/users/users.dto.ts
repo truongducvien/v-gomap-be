@@ -1,4 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
+import { User } from '@prisma/client';
 import { IsEmail, IsNotEmpty } from 'class-validator';
 
 export class CreateUserDto {
@@ -17,9 +18,18 @@ export class CreateUserDto {
 
   @ApiProperty()
   profileUrl?: string;
+
+  constructor(newUser: Omit<User, 'id'>) {
+    Object.assign(this, newUser);
+  }
 }
 
 export class GetUserDto extends CreateUserDto {
   @ApiProperty()
   id: string;
+
+  constructor(user: User) {
+    super(user);
+    Object.assign(this, user);
+  }
 }

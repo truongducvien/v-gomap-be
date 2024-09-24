@@ -3,6 +3,7 @@ export interface AuthServiceUser {
   firstName: string;
   lastName: string;
   picture: string;
+  provider?: string;
 }
 
 export interface JwtPayload {

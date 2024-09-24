@@ -19,6 +19,9 @@ export class CreateUserDto {
   @ApiProperty()
   profileUrl?: string;
 
+  @ApiProperty()
+  provider?: string;
+
   constructor(newUser: Omit<User, 'id'>) {
     Object.assign(this, newUser);
   }

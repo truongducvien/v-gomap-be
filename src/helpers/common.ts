@@ -7,4 +7,7 @@ const getTokenFromRequestHeader = (req: Request): string | null => {
   return token;
 };
 
-export { getTokenFromRequestHeader };
+const getPublicFbAvatarUrl = (userId: string, accessToken: string) =>
+  `https://graph.facebook.com/${userId}/picture?type=large&access_token=${accessToken}`;
+
+export { getTokenFromRequestHeader, getPublicFbAvatarUrl };

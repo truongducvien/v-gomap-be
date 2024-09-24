@@ -34,7 +34,7 @@ export class AuthController {
   @Redirect()
   async googleRedirect(@Request() req) {
     const googleUserRes = req.user as AuthServiceUser; // Google strategy returned the value and assigned user value to the request
-    const { email, firstName, lastName, picture } = googleUserRes;
+    const { email, firstName, lastName, picture, provider } = googleUserRes;
 
     const existedUser = await this.userService.findByEmail(googleUserRes.email);
     let payload: JwtPayload;
@@ -45,6 +45,7 @@ export class AuthController {
         firstName,
         lastName,
         profileUrl: picture,
+        provider,
       });
       payload = { email: newUser.email };
     } else {
@@ -65,7 +66,7 @@ export class AuthController {
   @Redirect()
   async facebookRedirect(@Request() req) {
     const fbUserRes = req.user as AuthServiceUser; // Facebook strategy returned the value and assigned user value to the request
-    const { email, firstName, lastName, picture } = fbUserRes;
+    const { email, firstName, lastName, picture, provider } = fbUserRes;
 
     const existedUser = await this.userService.findByEmail(fbUserRes.email);
     let payload: JwtPayload;
@@ -76,6 +77,7 @@ export class AuthController {
         firstName,
         lastName,
         profileUrl: picture,
+        provider,
       });
       payload = { email: newUser.email };
     } else {

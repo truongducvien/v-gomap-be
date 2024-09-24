@@ -14,9 +14,10 @@ datasource db {
 }
 
 model User {
-  id    Int    @id @default(autoincrement())
-  email String @unique
-  firstName String @default("")
-  lastName String @default("")
-  profileUrl String @default("")
+  id         Int     @id @default(autoincrement())
+  email      String  @unique
+  firstName  String  @default("")
+  lastName   String  @default("")
+  profileUrl String?
+  provider   String?
 }

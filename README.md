@@ -52,24 +52,11 @@ $ yarn db:migrate:dev
 
 ## Apply change to prisma client
 
-You need to run this comment right after running migration to update prisma client
+You need to run this command right after running migration to update prisma client. If it fails, delete the folder node_modules/.prisma/client and try again.
 
 ```bash
 # development
 $ yarn prisma:generate
-```
-
-## Test
-
-```bash
-# unit tests
-$ yarn run test
-
-# e2e tests
-$ yarn run test:e2e
-
-# test coverage
-$ yarn run test:cov
 ```
 
 ## License

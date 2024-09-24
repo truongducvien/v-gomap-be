@@ -52,6 +52,8 @@ $ yarn db:migrate:dev
 
 ## Apply change to prisma client
 
+You need to run this comment right after running migration to update prisma client
+
 ```bash
 # development
 $ yarn prisma:generate

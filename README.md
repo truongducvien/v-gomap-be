@@ -1,4 +1,4 @@
-## Description
+# Description
 
 V Gomap back-end & database repository.
 
@@ -31,14 +31,14 @@ $ yarn db:init:dev
 $ yarn install
 ```
 
-## Run migration
+4. Run migration
 
 ```bash
 # development
 $ yarn db:migrate:dev
 ```
 
-## Apply change to prisma client
+5. Apply change to prisma client
 
 You need to run this command right after running migration to update prisma client. If it fails, delete the folder node_modules/.prisma/client and try again.
 
@@ -47,7 +47,7 @@ You need to run this command right after running migration to update prisma clie
 $ yarn prisma:generate
 ```
 
-## Run the app
+6. Run the app
 
 ```bash
 # development
@@ -60,4 +60,13 @@ $ yarn start:dev
 $ yarn start:prod
 ```
 
-## License
+## Using docker-compose
+
+Make sure your docker is running
+
+1. Create .env file for production build
+2. Run docker-compose to build & run the containers for database and server
+
+```
+docker-compose up -d
+```

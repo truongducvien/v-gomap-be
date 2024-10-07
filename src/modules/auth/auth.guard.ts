@@ -1,5 +1,4 @@
 import {
-  BadRequestException,
   CanActivate,
   ExecutionContext,
   Injectable,
@@ -19,6 +18,13 @@ export class GoogleAuthGuard extends AuthGuard('google') {
       accessType: 'offline',
     });
   }
+  getAuthenticateOptions(context: ExecutionContext) {
+    const req = context.switchToHttp().getRequest();
+    return {
+      // Save the redirect information to the OAuth's "state", this state can be passed through OAuth's flow
+      state: req.query['redirect'],
+    };
+  }
 }
 
 export class FacebookAuthGuard extends AuthGuard('facebook') {
@@ -26,6 +32,13 @@ export class FacebookAuthGuard extends AuthGuard('facebook') {
     super({
       accessType: 'offline',
     });
+  }
+  getAuthenticateOptions(context: ExecutionContext) {
+    const req = context.switchToHttp().getRequest();
+    return {
+      // Save the redirect information to the OAuth's "state", this state can be passed through OAuth's flow
+      state: req.query['redirect'],
+    };
   }
 }
 @Injectable()

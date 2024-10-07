@@ -16,6 +16,7 @@ import { JwtPayload, AuthServiceUser } from './auth.interface';
 import { LogInResponseDto } from './auth.dto';
 import { JwtService } from '@nestjs/jwt';
 import { FacebookAuthGuard, GoogleAuthGuard } from './auth.guard';
+import { generateRedirectUrl } from 'src/helpers';
 
 @ApiTags('Auth')
 @Controller('auth')
@@ -25,6 +26,7 @@ export class AuthController {
     private jwtService: JwtService
   ) {}
 
+  // Require to pass the param 'redirect' to the api request url
   @Get('google')
   @UseGuards(GoogleAuthGuard)
   async googleAuth() {}
@@ -54,9 +56,24 @@ export class AuthController {
 
     const authToken = this.jwtService.sign(payload as JwtPayload);
 
-    return { url: `${process.env.PUBLIC_FE_URL}?token=${authToken}` };
+    const redirectUrl = req.query.state; // The param redirect had been put inside OAuth state in AuthGuard
+    if (!redirectUrl) {
+      throw new BadRequestException('Redirect url is required');
+    }
+
+    const newRedirectUrl = generateRedirectUrl(redirectUrl, {
+      token: authToken,
+    });
+    if (!newRedirectUrl) {
+      throw new BadRequestException('Invalid redirect url');
+    }
+
+    return {
+      url: newRedirectUrl,
+    };
   }
 
+  // Require to pass the param 'redirect' to the api request url
   @Get('facebook')
   @UseGuards(FacebookAuthGuard)
   async facebookAuth() {}
@@ -86,7 +103,21 @@ export class AuthController {
 
     const authToken = this.jwtService.sign(payload as JwtPayload);
 
-    return { url: `${process.env.PUBLIC_FE_URL}?token=${authToken}` };
+    const redirectUrl = req.query.state; // The param redirect had been put inside OAuth state in AuthGuard
+    if (!redirectUrl) {
+      throw new BadRequestException('Redirect url is required');
+    }
+
+    const newRedirectUrl = generateRedirectUrl(redirectUrl, {
+      token: authToken,
+    });
+    if (!newRedirectUrl) {
+      throw new BadRequestException('Invalid redirect url');
+    }
+
+    return {
+      url: newRedirectUrl,
+    };
   }
 
   @Get('log-in')

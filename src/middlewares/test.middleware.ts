@@ -3,19 +3,17 @@ import { NextFunction, Request, Response } from 'express';
 
 // @Injectable()
 // export class TestMiddleWare implements NestMiddleware {
-//   constructor() {}
-
 //   use(req: Request, res: Response, next: NextFunction) {
-//     console.log(req.params);
+//     console.log('Test middleware::: ', req.params);
 //     next();
 //   }
 // }
 
-export const testMiddleWare = (
+export const funcMiddleware = (
   req: Request,
   res: Response,
   next: NextFunction
 ) => {
-  console.log(req.params);
+  console.log('Test middleware::: ', req.params);
   next();
 };
